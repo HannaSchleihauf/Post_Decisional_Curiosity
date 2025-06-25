@@ -41,7 +41,8 @@ This folder contains the R script for the analysis and also power analyses of St
 [`script - Study 1A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study1/scripts)  
 
 [`script - Study 2A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study2/scripts)  
-
+  
+  
 2.  [`children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children):
     In the folder children, you can the subfolders for Study 1B and 2B.  
     

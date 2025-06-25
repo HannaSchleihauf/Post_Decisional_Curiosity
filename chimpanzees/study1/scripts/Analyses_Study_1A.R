@@ -3,7 +3,7 @@
 # Load packages -------------------------------------------------------------
 # Define required packages
 required_packages <- c(
-  "lme4","readxl","tidyverse","tidyselect","parallel","optimx","emmeans","car", 
+  "lme4", "readxl", "tidyverse", "tidyselect", "parallel", "optimx", "emmeans", "car",
   "irr"
 )
 # Check and install missing packages
@@ -27,7 +27,7 @@ source("./study1/functions/boot_glmm.r")
 # load("./study1/R_objects/analysis_1.RData")
 
 xdata <-
-  read.csv2("./study1/data/Counterfactual_Curiosity_Study_1_Chimps.csv",
+  read.csv2("./study1/data/data_study1A_chimpanzees.csv",
     header = TRUE, na = c("NA", "")
   )
 # remove spaces at the end of the data
@@ -205,7 +205,7 @@ plot(effect(c("condition"), main))
 ## Pairwise comparisons
 emm1 <- emmeans(full, ~ food.received * condition)
 summary(emm1, type = "response")
-emmeans(full, pairwise ~  food.received | condition, type = "response")
+emmeans(full, pairwise ~ food.received | condition, type = "response")
 
 emm2 <- emmeans(main, ~condition)
 summary(emm2, type = "response")
@@ -423,9 +423,12 @@ exp1_plot_condition <-
   ggplot() +
   geom_violin(
     data = xdata.agg,
-    aes(x = factor(condition,
-      levels = c("control", "choice", "no-choice")), 
-      y = mean.resp, fill = condition),
+    aes(
+      x = factor(condition,
+        levels = c("control", "choice", "no-choice")
+      ),
+      y = mean.resp, fill = condition
+    ),
     position = position_nudge(x = 0.00), alpha = .2
   ) +
   scale_fill_manual(values = c("dodgerblue", "darkorange", "darkorange")) +
@@ -538,7 +541,7 @@ full <-
   glmer(
     searched ~ condition * food.received +
       (1 + (condition.choice.code) +
-         (food.received.low.code + food.received.none.code) | name),
+        (food.received.low.code + food.received.none.code) | name),
     data = without_contr, control = contr, family = binomial(link = "logit")
   )
 
@@ -546,7 +549,7 @@ main <-
   glmer(
     searched ~ condition + food.received +
       (1 + (condition.choice.code) +
-         (food.received.low.code + food.received.none.code) | name),
+        (food.received.low.code + food.received.none.code) | name),
     data = without_contr, control = contr, family = binomial(link = "logit")
   )
 
@@ -554,7 +557,7 @@ null <-
   glmer(
     searched ~ condition + food.received +
       (1 + (condition.choice.code) +
-         (food.received.low.code + food.received.none.code) | name),
+        (food.received.low.code + food.received.none.code) | name),
     data = without_contr, control = contr, family = binomial(link = "logit")
   )
 

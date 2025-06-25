@@ -1,4 +1,4 @@
-# Analysis Study 1 - Chimpanzees
+# Analysis Study 1 - Children
 
 # Load packages -------------------------------------------------------------
 # Define required packages
@@ -28,7 +28,7 @@ options(scipen = 9999)
 # load("./study1/R_objects/analysis_1.RData")
 
 xdata <-
-  read.csv("./study1/data/Counterfactual_Curiosity_Study_1_Children.csv",
+  read.csv("./study1/data/data_study1B_children.csv",
     header = TRUE, na = c("NA", "")
   )
 # remove spaces at the end of the data

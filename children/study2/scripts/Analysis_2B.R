@@ -1,26 +1,36 @@
+# Analysis Study 2 - Children
 
+# Load packages -------------------------------------------------------------
+# Define required packages
+required_packages <- c(
+  "lme4","readxl","tidyverse","tidyselect","parallel","optimx","emmeans","car",
+  "irr"
+)
+# Check and install missing packages
+installed_packages <- rownames(installed.packages())
 
-library("lme4")
-library("readxl")
-library("tidyverse")
-library("tidyselect")
-library("parallel")
-library("dfoptim")
-library("optimx")
-library("emmeans")
-source("./study2/functions/diagnostic_fcns.r")
-source("./study2/functions/glmm_stability.r")
-source("./study2/functions/drop1_para.r")
-source("./study2/functions/boot_glmm.r")
-library("emmeans")
-library("car")
+for (pkg in required_packages) {
+  if (!(pkg %in% installed_packages)) {
+    install.packages(pkg)
+  }
+  library(pkg, character.only = TRUE)
+}
+# Source custom functions
+source("./study1/functions/diagnostic_fcns.r")
+source("./study1/functions/glmm_stability.r")
+source("./study1/functions/drop1_para.r")
+source("./study1/functions/boot_glmm.r")
+options(scipen = 9999)
 
-############################################################################
-# Load Data
-############################################################################
+# Load Data -----------------------------------------------------------------
+
+# To load all the objects, including model results and bootstraps, you can run the follwing line:
+# load("./study2/R_objects/Analysis_2.RData")
+
 xdata <-
-  read_csv("/Users/Schle008/Dropbox/Research/my_projects/Counterfactual_Curiousity/Counterfactual_Curiosity_shared/children/study2/data/Study2_Coding_Sheet.csv",
-           col_names = TRUE, na= c("NA", ""))
+  read.csv("./study2/data/data_study2B_children.csv",
+           header = TRUE, na = c("NA", "")
+  )
 
 xdata <-
   xdata %>%
@@ -69,9 +79,7 @@ kappa_results <-
   ), "unweighted")
 print(kappa_results)
 
-############################################################################
-# FITTING THE MODEL
-############################################################################
+# FITTING THE MODEL -----------------------------------------------------------------
 xx.fe.re=fe.re.tab(fe.model="searched.in.targeted.box ~ trial",
                    re="(1|nr)", data=xdata)  #maybe add age
 xx.fe.re$summary
@@ -85,19 +93,15 @@ chance.test_exp2 <- glmer(searched.in.targeted.box ~ 1 +
                           data = t.data, family = binomial, control = contr
 )
 
-############################################################################
-# CHECKING MODEL RESULTS
-############################################################################
+
+# CHECKING MODEL RESULTS -----------------------------------------------------------------
 summary(chance.test_exp2)
 plogis(0.5022)   # --> 62.8 % chance they look into the one that was available
 
 table(t.data$searched.in.targeted.box)
 ftable(searched.in.targeted.box ~ nr, t.data)
 
-############################################################################
-# SETTING PLOT THEME
-############################################################################
-
+# SETTING PLOT THEME -----------------------------------------------------------------
 boot.reward <-
   boot.glmm.pred(
     model.res = chance.test_exp2, excl.warnings = T,
@@ -138,9 +142,7 @@ my_theme <-
         margin(t = 10, r = 0, b = 0, l = 0)
     ))
 
-############################################################################
-# PLOTTING
-############################################################################
+# PLOTTING -----------------------------------------------------------------
 xdata$searched.in.targeted.box.nr <- as.numeric(xdata$searched.in.targeted.box)-1
 xdata.agg <- xdata %>%
   group_by(nr) %>%
@@ -196,5 +198,4 @@ plot_study2_children <-
 
 plot_study2_children
 
-
-save.image("./study2/images/Analysis_2.RData")
+save.image("./study2/R_objects/Analysis_2.RData")
