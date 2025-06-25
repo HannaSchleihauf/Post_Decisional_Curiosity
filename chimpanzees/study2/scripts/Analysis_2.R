@@ -6,21 +6,40 @@ library("parallel")
 library("dfoptim")
 library("optimx")
 library("emmeans")
-source("./functions/diagnostic_fcns.r")
-source("./functions/glmm_stability.r")
-source("./functions/drop1_para.r")
-source("./functions/boot_glmm.r")
+source("./study2/functions/diagnostic_fcns.r")
+source("./study2/functions/glmm_stability.r")
+source("./study2/functions/drop1_para.r")
+source("./study2/functions/boot_glmm.r")
 library("emmeans")
 library("car")
 
-
+############################################################################
+# Load Data
+############################################################################
 xdata <- 
-  read_xlsx("/Users/hanna.schleihauf/Dropbox/Research/my_projects/Counterfactual_Curiousity_Chimps/Counterfactual_Curiosity_Study_2.xlsx", col_names = TRUE, na= c("NA"))
+  read_xlsx("./study2/data/Counterfactual_Curiosity_Study_2_New.xlsx", 
+            col_names = TRUE, na= c("NA"))
 
-## Check data 
-xdata$searched.in.available
+############################################################################
+# INTERRATRER RELIABILITY
+############################################################################
 
-## Prepare data for model fitting------------------------------------
+# number of dyads for which the reliability coding was not the same
+sum(xdata$searched.in.available.reli !=
+      xdata$searched.in.available, na.rm = TRUE)
+
+# Cohen's Kappa
+library(irr)
+kappa_results <-
+  kappa2(cbind(
+    xdata$searched.in.available.reli,
+    xdata$searched.in.available
+  ), "unweighted")
+print(kappa_results)
+
+############################################################################
+# FITTING THE MODEL
+############################################################################
 xx.fe.re=fe.re.tab(fe.model="searched.in.available ~ trial",
                    re="(1|name)", data=xdata)  #maybe add age
 xx.fe.re$summary
@@ -35,11 +54,129 @@ chance.test_exp2 <- glmer(searched.in.available ~ 1 +
                           data = t.data, family = binomial, control = contr
 )
 
+############################################################################
+# CHECKING MODEL RESULTS
+############################################################################
 summary(chance.test_exp2)
-
 plogis(0.4390)   # --> 60.8 % chance they look into the one that was available
-
 ftable(searched.in.available ~ name, t.data)
+
+boot <-
+  boot.glmm.pred(
+    model.res = chance.test_exp2, excl.warnings = T,
+    nboots = 1000, para = F,
+    level = 0.95
+  )
+round(boot$ci.estimates, 3)
+as.data.frame(round(boot$ci.estimates, 3))
+m.stab.plot(round(boot$ci.estimates, 3))
+head(boot$ci.predicted)
+
+############################################################################
+# SETTING PLOT THEME
+############################################################################
+my_theme <-
+  theme(
+    legend.position = "top",
+    legend.direction = "horizontal",
+    legend.justification='left',
+    legend.background = element_blank(),
+    #legend.box.background = element_rect(colour = "black"),
+    legend.text = element_text(size=15),
+    
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    
+    axis.ticks.x = element_blank(),
+    axis.title = element_text(size = 15),
+    axis.text = element_text(size = 13), #, family = "Arial Narrow"),
+    strip.text.x = element_text(size = 15),
+    
+    #text = element_text(family = "Arial Narrow"),
+    
+    plot.margin = unit(c(1, 1, 1, 1), "cm"),
+    axis.title.y.left = element_text(vjust = 3),
+    plot.title = element_text(color = "black", size = 15, face = "bold"),
+    axis.title.x = element_text(
+      margin =
+        margin(t = 10, r = 0, b = 0, l = 0)
+    ))
+
+############################################################################
+# PLOTTING ESTIMATES
+############################################################################
+
+boot <-
+  boot.glmm.pred(
+    model.res = chance.test_exp2, excl.warnings = T,
+    nboots = 1000, para = F,
+    level = 0.95)
+
+conf.int <- as.data.frame(round(boot$ci.estimates, 3))
+m.stab.plot(round(boot$ci.estimates, 3))
+
+plogis(0.502)
+plogis(0.231)
+plogis(0.884)
+
+xdata$searched.in.available.nr <- NA
+xdata <- 
+  xdata %>% 
+  mutate(searched.in.available.nr = ifelse(searched.in.available == "yes", 1,
+                    ifelse(searched.in.available == "no", 0, NA)))
+
+xdata.agg <- xdata %>%
+  group_by(name) %>%
+  summarise(mean.resp =
+              mean(searched.in.available.nr, na.rm = T)) %>%
+          na.omit()
+
+plot_study2_chimpanzees <-
+  ggplot(
+    data = xdata.agg,
+    aes(x = 1, y = mean.resp)
+  ) +
+  theme_light() +
+  geom_point(
+    data = xdata.agg, color = "gray30", size = 1.5,
+    alpha = .4, position = position_jitter(w = 0.25, h = 0)
+  ) +
+  geom_violin(
+    data = xdata.agg,
+    aes(x = 1, y = mean.resp),
+    position = position_nudge(x = 0.00),
+    fill = "gray70", alpha = .2, color = NA
+  ) +
+  geom_errorbar(
+    data = conf.int,
+    aes(
+      x = 1, y = plogis(boot$ci.estimates$orig),
+      ymin = plogis(boot$ci.estimates$X2.5.),
+      ymax = plogis(boot$ci.estimates$X97.5.)
+    ), color = "black",
+    width = 0.1, linewidth = 1
+  ) +
+  geom_point(
+    data = conf.int,
+    aes(x = 1, y = plogis(boot$ci.estimates$orig),),
+    color = "brown1", size = 4.5
+  )  +
+  geom_hline(yintercept=0.5, linetype='dotted', col = 'blue') +
+  scale_x_continuous(
+    name = "Chimpanzees"
+  ) +
+  scale_y_continuous(
+    name = "Searches in the available box",
+    limits=c(0, 1),
+    labels = scales::percent, 
+  ) +
+  my_theme +
+  theme(
+    axis.text.x=element_blank(),
+    axis.ticks.x=element_blank())
+
+plot_study2_chimpanzees
+
 
 #plot
 # For individual subjects
@@ -48,11 +185,11 @@ xdataind <- pivot_wider(xdataind, names_from= searched.in.available, values_from
 xdataind$prob <- xdataind$yes / (xdataind$yes + xdataind$no)
 
 xdata_plot <- ggplot(data = xdataind, aes(y = prob, x = name)) +  
-  geom_boxplot() + ylab("Proportion of information search in target box") + 
+  geom_boxplot() + ylab("Proportion of information search in available box") + 
   xlab("") + geom_hline(yintercept=0.5, linetype='dotted', col = 'blue')  + 
   theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust=1))  + 
   theme(axis.title = element_text(size = 15)) + theme(axis.text = element_text(size = 15))
 
 xdata_plot
 
-
+save.image("./study2/images/analysis_2.RData")

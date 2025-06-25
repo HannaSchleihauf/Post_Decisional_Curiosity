@@ -1,33 +1,56 @@
-## Counterfactual Curiosity
+## README: Chimpanzees and Human Children Explore Unchosen Options
 ================
 
-*Last updated on Thursday, June 08, 2023 at 10:31 PM*
+This repository contains data, code, and output for the paper "Chimpanzees and Human Children Explore Unchosen Options". The manuscript is still in preparation.
 
-## Overview
-
-This repository contains a preregistration, data, code, an (eventual)
-reproducible manuscript/supplement for a project entitled ‘\[Your title
-here\]’.
-
-\[Brief description of your project here\].
+*Last updated on Thursday, June 25, 2025c at 09:31 PM*
 
 ## Directory Structure
 
-The names of each folder are intended to be self-explanatory. There are
-six components organize the inputs and outputs of this project:
+There are two main folders for this project: chimpanzees and children.
+1. [`chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees):
+In the folder chimpanzees, you can find subfolders for Study 1A and 2A. 
 
-1.  [`codebooks`](https://github.com/HannaSchleihauf/Counterfactual_Curiosity/tree/master/codebooks):
-    lists of variable names, labels, and value labels (where
-    applicable).
-2.  [`data`](https://github.com/HannaSchleihauf/Counterfactual_Curiosity/tree/master/data):
-    raw data, stored as `.Rdata` and .csv files.
-3.  [`manuscript`](https://github.com/HannaSchleihauf/Counterfactual_Curiosity/tree/master/manuscript):
-    a reproducible manuscript for submission to a journal.
-4.  [`preregistration`](https://github.com/HannaSchleihauf/Counterfactual_Curiosity/tree/master/preregistration):
-    a preregistration document that details the plans for this project.
-5.  [`scripts`](https://github.com/HannaSchleihauf/Counterfactual_Curiosity/tree/master/scripts):
-    R-scripts that read, analyze, and produce all outputs.
-6.  [`supplement`](https://github.com/HannaSchleihauf/Counterfactual_Curiosity/tree/master/supplement):
-    a supplemental text with additional information and materials.
+These folders contain the csv file with the chimpanzee data for Study 1A and 2A:
+[`data - Study 1A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study1/data)
+[`data - Study 2A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study2/data)
 
-## References
+These folders contain all functions used in the analysis scripts for Study 1A and 2A:
+[`functions - Study 1A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study1/functions)
+[`functions - Study 2A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study2/functions)
+
+These folders contain all plots produced for Study 1A and 2A:
+[`plots - Study 1A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study1/plots)
+[`plots - Study 2A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study2/plots)
+
+These folders contain the R image which contains all objects that were created with the scripts. Since some of the code (especially the bootstraps) take a long time to run, it mightbe useful to load the image at the beginning of the script:
+[`R_objects - Study 1A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study1/plots)
+[`R_objects - Study 2A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study2/plots)
+
+This folder contains the R script for the analysis and also power analyses of Study 1A and 2A:
+[`script - Study 1A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study1/scripts)
+[`script - Study 2A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study2/scripts)
+
+
+2.  [`children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children):
+    In the folder children, you can the subfolders for Study 1B and 2B. 
+    
+These folders contain the csv file with the chimpanzee data for Study 1A and 2A:
+[`data - Study 1B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study1/data)
+[`data - Study 2B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study2/data)
+
+These folders contain all functions used in the analysis scripts for Study 1A and 2A:
+[`functions - Study 1B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study1/functions)
+[`functions - Study 2B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study2/functions)
+
+These folders contain all plots produced for Study 1A and 2A:
+[`plots - Study 1B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study1/plots)
+[`plots - Study 2B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study2/plots)
+
+These folders contain the R image which contains all objects that were created with the scripts. Since some of the code (especially the bootstraps) take a long time to run, it mightbe useful to load the image at the beginning of the script:
+[`R_objects - Study 1B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study1/plots)
+[`R_objects - Study 2B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study2/plots)
+
+This folder contains the R script for the analysis and also power analyses of Study 1A and 2A:
+[`script - Study 1B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study1/scripts)
+[`script - Study 2B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study2/scripts)
