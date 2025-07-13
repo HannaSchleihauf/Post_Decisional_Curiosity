@@ -44,6 +44,9 @@ kappa_results <-
   ), "unweighted")
 print(kappa_results)
 
+# Descriptives
+prop.table(table(xdata$searched.in.available))
+
 # Fitting the Model ------------------------------------------------
 xx.fe.re <- fe.re.tab(
   fe.model = "searched.in.available ~ trial",

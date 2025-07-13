@@ -104,10 +104,13 @@ max(xdata$age)
 table(xdata$gender) / 54
 
 # Descriptives
-ftable(searched ~ condition + food.received, t.data)
+ftable(searched ~ condition + food.received, xdata)
+round(prop.table(ftable(searched ~ condition, xdata), margin = 1) * 100, 2)
+round(prop.table(ftable(searched ~ food.received, xdata), margin = 1) * 100, 2)
+
 round(tapply(
-  (as.numeric(t.data$searched) - 1),
-  list(t.data$condition, t.data$food.received), mean
+  (as.numeric(xdata$searched) - 1),
+  list(xdata$condition, xdata$food.received), mean
 ), 3)
 
 # Prepare data for model fitting------------------------------------
