@@ -29,7 +29,7 @@ options(scipen = 9999)
 
 xdata <-
   read.csv("./study1/data/data_study1B_children.csv",
-    header = TRUE, na = c("NA", "")
+           header = TRUE, na = c("NA", "")
   )
 # remove spaces at the end of the data
 xdata <- as.data.frame(
@@ -47,8 +47,8 @@ xdata <- as.data.frame(
 # Ignore familiarization trials
 xdata <-
   subset(xdata, xdata$condition.trial == "choice" |
-    xdata$condition.trial == "no.choice" |
-    xdata$condition.trial == "control")
+           xdata$condition.trial == "no.choice" |
+           xdata$condition.trial == "control")
 xdata$condition <-
   droplevels(as.factor(xdata$condition))
 
@@ -56,22 +56,22 @@ xdata$condition <-
 xdata$searched <-
   as.factor(xdata$searched)
 ftable(searched ~
-  condition + reward.received, xdata)
+         condition + reward.received, xdata)
 xdata$condition <-
   factor(xdata$condition,
-    levels = c("control", "choice", "no.choice"),
-    labels = c("control", "choice", "no.choice")
+         levels = c("control", "choice", "no.choice"),
+         labels = c("control", "choice", "no.choice")
   )
 xdata$value.remaining.seen <-
   as.factor(xdata$value.remaining.seen)
 xdata$value.remaining.seen <-
   relevel(xdata$value.remaining.seen,
-    ref = "worse"
+          ref = "worse"
   )
 xdata$trial.per.child <-
   as.numeric(ave(xdata$id,
-    list(xdata$id, xdata$id),
-    FUN = seq_along
+                 list(xdata$id, xdata$id),
+                 FUN = seq_along
   ))
 
 # Participant information ------------------------------------------
@@ -103,6 +103,11 @@ kappa_results <-
   ), "unweighted")
 print(kappa_results)
 
+# Descriptives
+ftable(searched ~ condition + reward.received, xdata)
+round(prop.table(ftable(searched ~ condition, xdata), margin = 1) * 100, 2)
+round(prop.table(ftable(searched ~ reward.received, xdata), margin = 1) * 100, 2)
+
 # Prepare data for model fitting------------------------------------
 xx.fe.re <- fe.re.tab(
   fe.model = "searched ~ age*condition*reward.received +
@@ -113,9 +118,51 @@ xx.fe.re <- fe.re.tab(
 xx.fe.re$summary
 t.data <- xx.fe.re$data
 str(t.data)
+# We do not have enough variation levels of reward received that have more than 2 observation per subject.
+# Thus, we cannot include that random slope into the model.
 
-## Center dummy variables
-## (necessary for the random effects in the model and potentially plotting)
+# Means and SDs
+t.data$searched_num <- as.numeric(t.data$searched) - 1
+
+per_subject <- t.data %>%
+  group_by(id, condition) %>%
+  summarise(prop_searched = mean(searched_num, na.rm = TRUE),
+            n_trials = n(),
+            .groups = "drop")
+per_subject_summary <- per_subject %>%
+  group_by(condition) %>%
+  summarise(mean_prop = mean(prop_searched, na.rm = TRUE),
+            sd_prop   = sd(prop_searched, na.rm = TRUE),
+            n_subjects = n(),
+            .groups = "drop")
+
+per_subject <- t.data %>%
+  group_by(id, reward.received) %>%
+  summarise(prop_searched = mean(searched_num, na.rm = TRUE),
+            n_trials = n(),
+            .groups = "drop")
+per_subject_summary <- per_subject %>%
+  group_by(reward.received) %>%
+  summarise(mean_prop = mean(prop_searched, na.rm = TRUE),
+            sd_prop   = sd(prop_searched, na.rm = TRUE),
+            n_subjects = n(),
+            .groups = "drop")
+
+per_subject <- t.data %>%
+  group_by(id, condition, reward.received) %>%
+  summarise(prop_searched = mean(searched_num, na.rm = TRUE),
+            n_trials = n(),
+            .groups = "drop")
+
+per_subject_summary <- per_subject %>%
+  group_by(condition, reward.received) %>%
+  summarise(mean_prop  = mean(prop_searched, na.rm = TRUE),
+            sd_prop    = sd(prop_searched, na.rm = TRUE),
+            n_subjects = n(),
+            .groups = "drop")
+
+## Center dummy variables$
+## (necessary for the random effects in the model or plotting)
 t.data$reward.received.low.code <-
   t.data$reward.received.low - mean(t.data$reward.received.low)
 t.data$reward.received.none.code <-
@@ -124,22 +171,20 @@ t.data$condition.no.choice.code <-
   t.data$condition.no.choice - mean(t.data$condition.no.choice)
 t.data$condition.choice.code <-
   t.data$condition.choice - mean(t.data$condition.choice)
+t.data$gender.code <-
+  t.data$gender.male - mean(t.data$gender.male)
 t.data$z.age <- scale(t.data$age)
 t.data$z.trial <- scale(t.data$trial.per.child)
 
 # Fitting models ----------------------------------------------------
-## Full model (age had been forgotten in the pre-registration)
-## While we preregistered to also add trial number into the random slopes,
-## we decided to drop this slope from the model, since we already encounter
-## singular fit messages
-contr <-
-  glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 10000000))
+
+contr <- glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 10000000))
 
 full <-
   glmer(
     searched ~
-      (reward.received + condition + z.age)^2 +
-      (1 + (reward.received.low.code + reward.received.none.code) | id),
+      (reward.received + condition + z.age)^2  + gender + z.trial +
+      (1 + z.trial | id), #(reward.received.low.code + reward.received.none.code)
     data = t.data, control = contr,
     family = binomial(link = "logit")
   )
@@ -147,8 +192,8 @@ full <-
 red <-
   glmer(
     searched ~
-      reward.received + (condition + z.age)^2 +
-      (1 + (reward.received.low.code + reward.received.none.code) | id),
+      reward.received + (condition + z.age)^2 + gender + z.trial +
+      (1 + z.trial | id), #(reward.received.low.code + reward.received.none.code)
     data = t.data, control = contr,
     family = binomial(link = "logit")
   )
@@ -156,16 +201,17 @@ red <-
 main <-
   glmer(
     searched ~
-      reward.received + condition + z.age +
-      (1 + (reward.received.low.code + reward.received.none.code) | id),
+      reward.received + condition + z.age + gender + z.trial +
+      (1 + z.trial | id), #(reward.received.low.code + reward.received.none.code)
     data = t.data, control = contr,
     family = binomial(link = "logit")
   )
 
 null <-
   glmer(
-    searched ~ 1 +
-      (1 + (reward.received.low.code + reward.received.none.code) | id),
+    searched ~
+      1 +
+      (1 + z.trial | id), #(reward.received.low.code + reward.received.none.code)
     data = t.data, control = contr,
     family = binomial(link = "logit")
   )
@@ -201,8 +247,7 @@ cbind(
 
 # Model Comparisons -------------------------------------------------------
 
-## Full-null models comparison
-round(anova(full, null, test = "Chisq"), 3)
+anova(full, null, test = "LRT")
 
 ## Reduced model comparisons
 tests.full <- drop1p(
@@ -224,7 +269,9 @@ round(tests.main$drop1.res, 3)
 ## First peek at effects
 library("effects")
 plot(effect("condition:z.age", red))
-plot(effect(c("reward.received"), main))
+plot(effect("z.trial", red))
+plot(effect("gender", red))
+plot(effect(c("reward.received"), red))
 
 ## Pairwise comparisons
 emm1 <- emmeans(main, ~condition)
@@ -253,8 +300,8 @@ boot.full$ci.predicted
 model.condition.age <-
   glmer(
     searched ~ condition * z.age +
-      (reward.received.low.code + reward.received.none.code) +
-      (1 | id),
+      (reward.received.low.code + reward.received.none.code) + gender.male + z.trial +
+      (1 + z.trial | id), #(reward.received.low.code + reward.received.none.code)
     data = t.data, control = contr,
     family = binomial(link = "logit")
   )
@@ -273,11 +320,13 @@ head(boot.condition.age$ci.predicted)
 model.reward <-
   glmer(
     searched ~ reward.received +
-      z.age * (condition.no.choice.code + condition.choice.code) +
-      (1 | id),
+      z.age * (condition.no.choice.code + condition.choice.code) + gender.male + z.trial +
+      (1 + z.trial | id),
     data = t.data, control = contr,
     family = binomial(link = "logit")
   )
+
+summary(model.reward)$coefficients
 
 boot.reward <-
   boot.glmm.pred(
@@ -308,7 +357,7 @@ xdata.agg$mean.resp2 <-
 
 exp1_plot_reward <-
   ggplot(data = xdata.agg, aes(x = factor(reward.received,
-    levels = c("high", "low", "none")
+                                          levels = c("high", "low", "none")
   ), y = mean.resp2)) +
 
   # geom_line(aes(x = reward.received2, y = mean.resp2, group = id),
@@ -449,9 +498,22 @@ xdata.agg.condition <- xdata %>%
   group_by(id, z.age, condition) %>%
   summarise(mean.resp = mean(searched.numeric, na.rm = T)) %>%
   ungroup()
+xdata.agg.age.group.condition$age.group <- as.numeric(xdata.agg.age.group.condition$age.group) + 0.5
 
 xdata.agg.condition$mean.resp2 <-
   jitter(xdata.agg.condition$mean.resp, amount = 0.04)
+
+xdata.agg.age.group.condition <- xdata %>%
+  mutate(searched.numeric = as.numeric(searched) - 1) %>%
+  group_by(age.group, condition) %>%
+  summarise(mean.resp = mean(searched.numeric, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(
+    # if age.group is a factor like "2","3",..., go through as.character first
+    age.group.mid = as.numeric(as.character(age.group)) + 0.5,
+    # put it on the SAME z-scale as z.age
+    z.age.group   = (age.group.mid - mean(xdata$age)) / sd(xdata$age)
+  )
 
 exp1_plot_condition <-
   ggplot() +
@@ -460,6 +522,11 @@ exp1_plot_condition <-
     aes(x = z.age, y = mean.resp2, fill = condition, color = condition),
     size = 1.7, alpha = .4
   ) +
+  # geom_point(
+  #   data = xdata.agg.age.group.condition, shape = 23,
+  #   aes(x = z.age.group, y = mean.resp, fill = condition, color = condition),
+  #   size = 3, alpha = 1
+  # ) +
   geom_ribbon(
     data = boot.condition.age$ci.predicted,
     aes(x = z.age, ymin = lower.cl, ymax = upper.cl,
@@ -473,7 +540,7 @@ exp1_plot_condition <-
       y = fitted,
       color = condition), size = 0.8) +
   scale_color_manual(values = c("dodgerblue4", "darkorange4", "darkorange4")) +
-  facet_wrap(~condition, switch = "x") +
+  facet_wrap(~condition, strip.position = "bottom") +
   scale_x_continuous(
     name = "Condition * Age",
     breaks = c(
@@ -512,10 +579,10 @@ exp1_plot_condition
 library(ggpubr)
 # theme_set(theme_pubr())
 figure <- ggarrange(exp1_plot_condition, exp1_plot_reward,
-  labels = c("(a)", "(b)"),
-  hjust = -1, # hjust = 0 for left alignment
-  vjust = 2.5, # hjust = 0 for left alignment
-  ncol = 2, nrow = 1
+                    labels = c("(a)", "(b)"),
+                    hjust = -1, # hjust = 0 for left alignment
+                    vjust = 2.5, # hjust = 0 for left alignment
+                    ncol = 2, nrow = 1
 )
 figure
 
@@ -529,8 +596,8 @@ without_contr <- subset(t.data, t.data$condition == "choice" |
 full.no.cont <-
   glmer(
     searched ~
-      (reward.received + condition + z.age)^2 +
-      (1 + (reward.received.low.code + reward.received.none.code) | id),
+      (reward.received + condition + z.age)^2 + gender + z.trial +
+      (1 + z.trial | id),
     data = without_contr, control = contr,
     family = binomial(link = "logit")
   )
@@ -538,8 +605,8 @@ full.no.cont <-
 main.no.cont <-
   glmer(
     searched ~
-      reward.received + condition + z.age +
-      (1 + (reward.received.low.code + reward.received.none.code) | id),
+      reward.received + condition + z.age + gender + z.trial +
+      (1 + z.trial | id),
     data = without_contr, control = contr,
     family = binomial(link = "logit")
   )
@@ -548,7 +615,7 @@ null.no.cont <-
   glmer(
     searched ~
       1 +
-      (1 + (reward.received.low.code + reward.received.none.code) | id),
+      (1 + z.trial | id),
     data = without_contr, control = contr,
     family = binomial(link = "logit")
   )
@@ -585,6 +652,7 @@ tests.full <- drop1p(
   contr = contr
 )
 round(tests.full$drop1.res, 3)
+
 tests.main <- drop1p(
   model.res = main.no.cont,
   contr = contr
@@ -594,7 +662,8 @@ round(tests.main$drop1.res, 3)
 ## First peek at effects
 library("effects")
 plot(effect("condition:z.age", red))
-plot(effect(c("reward.received"), main))
+plot(effect(c("reward.received"), main.no.cont))
+plot(effect(c("z.trial"), main.no.cont))
 
 ## Bootstraps of full model
 boot.full <- boot.glmm.pred(
@@ -607,5 +676,4 @@ as.data.frame(round(boot.full$ci.estimates, 3))
 m.stab.plot(round(boot.full$ci.estimates, 3))
 boot.full$ci.predicted
 
-
-save.image("./study1/R_objects/analysis_1.RData")
+save.image("./study1/R_objects/analysis_1_full_random_slope_structure.RData")

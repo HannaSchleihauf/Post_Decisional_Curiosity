@@ -56,18 +56,29 @@ xx.fe.re$summary
 t.data <- xx.fe.re$data
 str(t.data)
 
+# z -tranform trial
 t.data$z.trial <- scale(t.data$trial)
 
+mean(as.numeric(t.data$searched.in.available) - 1)
+sd(as.numeric(t.data$searched.in.available) - 1)
+
 contr <- glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 10000000))
+
 chance.test_exp2 <- glmer(
-  searched.in.available ~ 1 +
+  searched.in.available ~ 1 + z.trial +
+    (1 + z.trial | name),
+  data = t.data, family = binomial, control = contr
+)
+
+chance.test_exp2.null   <- glmer(
+  searched.in.available ~ 0 + z.trial + 
     (1 + z.trial | name),
   data = t.data, family = binomial, control = contr
 )
 
 ## Test assumptions ----
 overdisp.test(chance.test_exp2) # no overdispersion
-ranef.diagn.plot(full)
+ranef.diagn.plot(chance.test_exp2)
 
 ## Checking model stability
 m.stab.b <-
@@ -77,8 +88,20 @@ as.data.frame(round(m.stab.b$summary[, -1], 3))
 m.stab.plot(round(m.stab.b$summary[, -1], 3))
 
 # CHECKING MODEL RESULTS ------------------------------------------------
+
 round(summary(chance.test_exp2)$coefficient, 3)
-plogis(0.4390) # --> 60.8 % chance they look into the one that was available
+
+plogis(0.478) # --> 61.7 % chance they look into the one that was available
+# since trial is z transformed the p value of intercept indicates difference from chance
+
+# Additional test to see whether intercept gets sig. with LRT test
+anova(chance.test_exp2, chance.test_exp2.null, test = "LRT")
+drop1(chance.test_exp2, test = "Chisq")
+
+library(emmeans)
+emmeans(chance.test_exp2, ~ 1, type = "response")
+emmeans(chance.test_exp2, ~ 1) |> test(null = 0)
+
 ftable(searched.in.available ~ name, t.data)
 
 boot <-
@@ -88,9 +111,9 @@ boot <-
     level = 0.95
   )
 
-plogis(0.502)
-plogis(0.231)
-plogis(0.884)
+plogis(0.128)
+plogis(0.478)
+plogis(0.865)
 
 as.data.frame(round(boot$ci.estimates, 3))
 m.stab.plot(round(boot$ci.estimates, 3))
@@ -124,7 +147,7 @@ my_theme <-
 
 # PLOTTING ESTIMATES ------------------------------------------------
 
-conf.int <- as.data.frame(round(boot$ci.estimates, 3))
+conf.int <- as.data.frame(round(boot$ci.estimates, 3))["(Intercept)",]
 xdata$searched.in.available.nr <- NA
 xdata <-
   xdata %>%
@@ -159,15 +182,15 @@ plot_study2_chimpanzees <-
   geom_errorbar(
     data = conf.int,
     aes(
-      x = 1, y = plogis(boot$ci.estimates$orig),
-      ymin = plogis(boot$ci.estimates$X2.5.),
-      ymax = plogis(boot$ci.estimates$X97.5.)
+      x = 1, y = plogis(orig),
+      ymin = plogis(X2.5.),
+      ymax = plogis(X97.5.)
     ), color = "black",
     width = 0.1, linewidth = 1
   ) +
   geom_point(
     data = conf.int,
-    aes(x = 1, y = plogis(boot$ci.estimates$orig), ),
+    aes(x = 1, y = plogis(orig), ),
     color = "brown1", size = 4.5
   ) +
   geom_hline(yintercept = 0.5, linetype = "dotted", col = "blue") +

@@ -24,17 +24,11 @@ These folders contain all functions used in the analysis scripts for Study 1A an
 
 [`functions - Study 2A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study2/functions)  
 
-These folders contain all plots produced for Study 1A and 2A:  
-
-[`plots - Study 1A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study1/plots)  
-
-[`plots - Study 2A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study2/plots)  
-
 These folders contain the R image which contains all objects that were created with the scripts. Since some of the code (especially the bootstraps) take a long time to run, it mightbe useful to load the image at the beginning of the script:  
 
-[`R_objects - Study 1A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study1/plots)  
+[`R_objects - Study 1A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study1/R_objects)  
 
-[`R_objects - Study 2A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study2/plots)  
+[`R_objects - Study 2A - chimpanzees`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/chimpanzees/study2/R_objects)  
 
 This folder contains the R script for the analysis and also power analyses of Study 1A and 2A:  
 
@@ -58,17 +52,12 @@ These folders contain all functions used in the analysis scripts for Study 1A an
 
 [`functions - Study 2B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study2/functions)  
 
-These folders contain all plots produced for Study 1A and 2A:  
-
-[`plots - Study 1B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study1/plots)  
-
-[`plots - Study 2B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study2/plots)  
 
 These folders contain the R image which contains all objects that were created with the scripts. Since some of the code (especially the bootstraps) take a long time to run, it mightbe useful to load the image at the beginning of the script:  
 
-[`R_objects - Study 1B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study1/plots)  
+[`R_objects - Study 1B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study1/R_objects)  
 
-[`R_objects - Study 2B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study2/plots)  
+[`R_objects - Study 2B - children`](https://github.com/HannaSchleihauf/Post_Decisional_Curiosity/tree/master/children/study2/R_objects)  
 
 This folder contains the R script for the analysis and also power analyses of Study 1A and 2A:  
 

@@ -70,6 +70,9 @@ sum(as.numeric(interrater$searched.in.targeted.box.reliability) !=
 (sum(as.numeric(interrater$searched.in.targeted.box.reliability) ==
      as.numeric(interrater$searched.in.targeted.box))) / nrow(interrater)
 
+# Descriptives
+prop.table(table(xdata$searched.in.targeted.box))
+
 # Cohen's Kappa
 library(irr)
 kappa_results <-
@@ -85,36 +88,67 @@ xx.fe.re=fe.re.tab(fe.model="searched.in.targeted.box ~ trial",
 xx.fe.re$summary
 t.data=xx.fe.re$data
 str(t.data)
+
+# z -tranform trial
 t.data$z.trial = scale(t.data$trial)
 
+mean(as.numeric(t.data$searched.in.targeted.box) - 1)
+sd(as.numeric(t.data$searched.in.targeted.box) - 1)
+
 contr <- glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 10000000))
-chance.test_exp2 <- glmer(searched.in.targeted.box ~ 1 +
+
+chance.test_exp2 <- glmer(searched.in.targeted.box ~ 1 + z.trial +
                             (1 + z.trial | nr),
                           data = t.data, family = binomial, control = contr
 )
 
+chance.test_exp2.null   <- glmer(searched.in.targeted.box ~ 0 + z.trial +
+    (1 + z.trial | nr),
+  data = t.data, family = binomial, control = contr
+)
+
+## Test assumptions ----
+overdisp.test(chance.test_exp2) # no overdispersion
+ranef.diagn.plot(chance.test_exp2)
+
+## Checking model stability
+m.stab.b <-
+  glmm.model.stab(model.res = chance.test_exp2, contr = contr, use = c("nr"))
+m.stab.b$detailed$warnings
+as.data.frame(round(m.stab.b$summary[, -1], 3))
+m.stab.plot(round(m.stab.b$summary[, -1], 3))
 
 # CHECKING MODEL RESULTS -----------------------------------------------------------------
-summary(chance.test_exp2)
-plogis(0.5022)   # --> 62.8 % chance they look into the one that was available
 
-table(t.data$searched.in.targeted.box)
+round(summary(chance.test_exp2)$coefficient, 3)
+
+plogis(0.523)   # --> 62.78 % chance they look into the one that was available
+# since trial is z transformed the p value of intercept indicates difference from chance
+
+# Additional test to see whether intercept gets sig. with LRT test
+anova(chance.test_exp2, chance.test_exp2.null, test = "LRT")
+drop1(chance.test_exp2, test = "Chisq")
+
+library(emmeans)
+emmeans(chance.test_exp2, ~ 1, type = "response")
+emmeans(chance.test_exp2, ~ 1) |> test(null = 0)
+
 ftable(searched.in.targeted.box ~ nr, t.data)
 
-# SETTING PLOT THEME -----------------------------------------------------------------
-boot.reward <-
+boot <-
   boot.glmm.pred(
     model.res = chance.test_exp2, excl.warnings = T,
     nboots = 1000, para = F,
     level = 0.95)
 
-conf.int <- as.data.frame(round(boot.reward$ci.estimates, 3))
-m.stab.plot(round(boot.reward$ci.estimates, 3))
+plogis(0.523)
+plogis(0.232)
+plogis(0.914)
 
-plogis(0.502)
-plogis(0.231)
-plogis(0.884)
+as.data.frame(round(boot$ci.estimates, 3))
+m.stab.plot(round(boot$ci.estimates, 3))
 
+# SETTING PLOT THEME -----------------------------------------------------------------
 my_theme <-
   theme(
     legend.position = "top",
@@ -142,15 +176,15 @@ my_theme <-
         margin(t = 10, r = 0, b = 0, l = 0)
     ))
 
-# PLOTTING -----------------------------------------------------------------
+# PLOTTING ESTIMATES ------------------------------------------------
+
+conf.int <- as.data.frame(round(boot$ci.estimates, 3))["(Intercept)",]
+
 xdata$searched.in.targeted.box.nr <- as.numeric(xdata$searched.in.targeted.box)-1
 xdata.agg <- xdata %>%
   group_by(nr) %>%
   summarise(mean.resp =
               mean(searched.in.targeted.box.nr, na.rm = T))
-
-emm1 <- emmeans(chance.test_exp2, ~ 1)
-conf.int <- as.data.frame(summary(emm1, type = "response"))
 
 plot_study2_children <-
   ggplot(
@@ -170,15 +204,15 @@ plot_study2_children <-
   geom_errorbar(
     data = conf.int,
     aes(
-      x = 1, y = plogis(boot.reward$ci.estimates$orig),
-      ymin = plogis(boot.reward$ci.estimates$X2.5.),
-      ymax = plogis(boot.reward$ci.estimates$X97.5.)
+      x = 1, y = plogis(orig),
+      ymin = plogis(X2.5.),
+      ymax = plogis(X97.5.)
     ), color = "black",
     width = 0.1, linewidth = 1
   ) +
   geom_point(
     data = conf.int,
-    aes(x = 1, y = plogis(boot.reward$ci.estimates$orig),
+    aes(x = 1, y = plogis(orig),
     color = "brown1", size = 4.5)
   )  +
   geom_hline(yintercept=0.5, linetype='dotted', col = 'blue') +

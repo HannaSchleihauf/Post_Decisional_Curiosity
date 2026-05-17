@@ -116,14 +116,54 @@ round(tapply(
 # Prepare data for model fitting------------------------------------
 xx.fe.re <- fe.re.tab(
   fe.model = "searched ~
-  condition*food.received + trial.total",
+  condition*food.received + trial.per.condition +  gender",
   re = "(1|name)",
-  other.vars = c("age", "gender", "trial.per.condition"),
+  other.vars = c("age", "trial.total"),
   data = xdata
 ) # maybe add age
 xx.fe.re$summary
 t.data <- xx.fe.re$data
 str(t.data)
+
+# Means and SDs
+t.data$searched_num <- as.numeric(t.data$searched) - 1
+
+per_subject <- t.data %>%
+  group_by(name, condition) %>%
+  summarise(prop_searched = mean(searched_num, na.rm = TRUE),
+            n_trials = n(),
+            .groups = "drop")
+per_subject_summary <- per_subject %>%
+  group_by(condition) %>%
+  summarise(mean_prop = mean(prop_searched, na.rm = TRUE),
+            sd_prop   = sd(prop_searched, na.rm = TRUE),
+            n_subjects = n(),
+            .groups = "drop")
+
+per_subject <- t.data %>%
+  group_by(name, food.received) %>%
+  summarise(prop_searched = mean(searched_num, na.rm = TRUE),
+            n_trials = n(),
+            .groups = "drop")
+per_subject_summary <- per_subject %>%
+  group_by(food.received) %>%
+  summarise(mean_prop = mean(prop_searched, na.rm = TRUE),
+            sd_prop   = sd(prop_searched, na.rm = TRUE),
+            n_subjects = n(),
+            .groups = "drop")
+
+per_subject <- t.data %>%
+  group_by(name, condition, food.received) %>%
+  summarise(prop_searched = mean(searched_num, na.rm = TRUE),
+            n_trials = n(),
+            .groups = "drop")
+
+per_subject_summary <- per_subject %>%
+  group_by(condition, food.received) %>%
+  summarise(mean_prop  = mean(prop_searched, na.rm = TRUE),
+            sd_prop    = sd(prop_searched, na.rm = TRUE),
+            n_subjects = n(),
+            .groups = "drop")
 
 ## Center dummy variables ----
 ## (necessary for the random effects in the model and potentially plotting)
@@ -135,7 +175,10 @@ t.data$condition.no.choice.code <-
   t.data$condition.no.choice - mean(t.data$condition.no.choice)
 t.data$condition.choice.code <-
   t.data$condition.choice - mean(t.data$condition.choice)
+t.data$gender.code <- t.data$gender.male - mean(t.data$gender.male)
 t.data$z.age <- scale(t.data$age)
+t.data$z.trial <-
+  scale(t.data$trial.per.condition)
 
 # Fitting models ----------------------------------------------------
 ## (as pre-registered)
@@ -144,17 +187,17 @@ contr <-
 
 full <-
   glmer(
-    searched ~ (food.received + condition)^2 +
+    searched ~ (food.received + condition)^2 + z.trial + gender +
       (1 + (condition.no.choice.code + condition.choice.code) +
-        (food.received.low.code + food.received.none.code) | name),
+        (food.received.low.code + food.received.none.code) + z.trial | name),
     data = t.data, control = contr, family = binomial(link = "logit")
   )
 
 main <-
   glmer(
-    searched ~ condition + food.received +
+    searched ~ condition + food.received + z.trial + gender +
       (1 + (condition.no.choice.code + condition.choice.code) +
-        (food.received.low.code + food.received.none.code) | name),
+        (food.received.low.code + food.received.none.code) + z.trial | name),
     data = t.data, control = contr, family = binomial(link = "logit")
   )
 
@@ -162,7 +205,7 @@ null <-
   glmer(
     searched ~ 1 +
       (1 + (condition.no.choice.code + condition.choice.code) +
-        (food.received.low.code + food.received.none.code) | name),
+         (food.received.low.code + food.received.none.code) + z.trial | name),
     data = t.data, control = contr, family = binomial(link = "logit")
   )
 
@@ -183,8 +226,7 @@ m.stab.plot(round(m.stab.b$summary[, -1], 3))
 
 # Model Comparisons -------------------------------------------------------
 
-## Full-null models comparison
-round(anova(full, null, test = "Chisq"), 3)
+anova(full, null, test = "LRT")
 
 ## Reduced model comparisons
 tests.full <- drop1p(
@@ -232,10 +274,10 @@ boot.full$ci.predicted
 ## Bootstraps of plot.model
 plot.model <-
   glmer(
-    searched ~ condition +
+    searched ~ condition + gender.code + z.trial + 
       (food.received.low.code + food.received.none.code) +
       (1 + (condition.no.choice.code + condition.choice.code) +
-        (food.received.low.code + food.received.none.code) | name),
+        (food.received.low.code + food.received.none.code) + z.trial | name),
     data = t.data,
     control = contr,
     family = binomial(link = "logit")
@@ -253,10 +295,10 @@ boot.plot$ci.predicted
 model.reward <-
   glmer(
     searched ~
-      food.received +
+      food.received + gender.code + z.trial + 
       (condition.no.choice.code + condition.choice.code) +
       (1 + (condition.no.choice.code + condition.choice.code) +
-        (food.received.low.code + food.received.none.code) | name),
+        (food.received.low.code + food.received.none.code) + z.trial  | name),
     data = t.data, control = contr,
     family = binomial(link = "logit")
   )
@@ -534,40 +576,95 @@ figure <- ggarrange(exp1_plot_condition, exp1_plot_rewards,
 )
 figure
 
-
-
 # Outcome effect without control condition:  ------------------------------
 
 without_contr <- subset(t.data, t.data$condition == "choice" | t.data$condition == "no-choice")
 
-full <-
+full_without_contr <-
   glmer(
-    searched ~ condition * food.received +
-      (1 + (condition.choice.code) +
-        (food.received.low.code + food.received.none.code) | name),
+    searched ~ (food.received + condition)^2 + z.trial + gender +
+      (1 + (condition.no.choice.code + condition.choice.code) +
+         (food.received.low.code + food.received.none.code) + z.trial | name),
     data = without_contr, control = contr, family = binomial(link = "logit")
   )
 
-main <-
+main_without_contr <-
   glmer(
-    searched ~ condition + food.received +
-      (1 + (condition.choice.code) +
-        (food.received.low.code + food.received.none.code) | name),
+    searched ~ condition + food.received + z.trial + gender +
+      (1 + (condition.no.choice.code + condition.choice.code) +
+         (food.received.low.code + food.received.none.code) + z.trial | name),
     data = without_contr, control = contr, family = binomial(link = "logit")
   )
 
-null <-
+null_without_contr <-
   glmer(
-    searched ~ condition + food.received +
-      (1 + (condition.choice.code) +
-        (food.received.low.code + food.received.none.code) | name),
+    searched ~ 1 + gender +
+      (1 + (condition.no.choice.code + condition.choice.code) +
+         (food.received.low.code + food.received.none.code) + z.trial | name),
     data = without_contr, control = contr, family = binomial(link = "logit")
   )
 
-anova(full, null, test = "Chisq")
-drop1(full, test = "Chisq")
-library(effects)
+summary(full_without_contr)$varcor
+round(summary(full_without_contr)$coefficients, 3)
 
-plot(effect("condition:food.received", full))
+## Test assumptions ----
+overdisp.test(full_without_contr) # no overdispersion
+vif(main_without_contr) # no colliniarity
+ranef.diagn.plot(full_without_contr)
+
+## Checking model stability
+m.stab.b <-
+  glmm.model.stab(model.res = full_without_contr, contr = contr, use = c("name"))
+m.stab.b$detailed$warnings
+as.data.frame(round(m.stab.b$summary[, -1], 3))
+m.stab.plot(round(m.stab.b$summary[, -1], 3))
+
+# Model Comparisons -------------------------------------------------------
+
+anova(full_without_contr, null_without_contr, test = "LRT")
+
+## Reduced model comparisons
+tests.full_without_contr <- drop1p(
+  model.res = full_without_contr,
+  para = F, data = NULL, contr = contr,
+  n.cores = c("all-1", "all"), to.del = NULL
+)
+round(tests.full_without_contr$drop1.res, 3)
+
+tests.main_without_contr <- drop1p(
+  model.res = main_without_contr,
+  para = F, data = NULL, contr = contr,
+  n.cores = c("all-1", "all"), to.del = NULL
+)
+round(tests.main_without_contr$drop1.res, 3)
+
+## First peek at effects
+library("effects")
+plot(effect("food.received:condition", full_without_contr))
+plot(effect(c("condition"), main_without_contr))
+
+## Pairwise comparisons
+emm1 <- emmeans(full_without_contr, ~ food.received * condition)
+summary(emm1, type = "response")
+emmeans(full_without_contr, pairwise ~ food.received | condition, type = "response")
+
+emm2 <- emmeans(main_without_contr, ~condition)
+summary(emm2, type = "response")
+emmeans(main_without_contr, pairwise ~ condition, type = "response")
+
+# Bootstraps --------------------------------------------------------------
+## Bootstraps of full model
+boot.full <-
+  boot.glmm.pred(
+    model.res = full_without_contr,
+    excl.warnings = T,
+    nboots = 1000, para = F,
+    level = 0.95,
+    use = c("condition", "food.received")
+  )
+
+as.data.frame(round(boot.full$ci.estimates, 3))
+m.stab.plot(round(boot.full$ci.estimates, 3))
+boot.full$ci.predicted
 
 save.image("./study1/R_objects/analysis_1.RData")
