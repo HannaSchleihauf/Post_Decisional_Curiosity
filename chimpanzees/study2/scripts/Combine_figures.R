@@ -1,4 +1,6 @@
-load("/Users/hanna.schleihauf/Dropbox/Research/my_projects/Counterfactual_Curiousity/Counterfactual_Curiosity_shared/children/study2/images/Analysis_2.RData")
+load("./children/study2/images/Analysis_2.RData")
+load("./children/study2/R_objects/Analysis_2.RData")
+
 
 # Combine plots
 library(ggpubr)

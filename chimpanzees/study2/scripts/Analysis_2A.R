@@ -15,18 +15,18 @@ for (pkg in required_packages) {
   library(pkg, character.only = TRUE)
 }
 # Source custom functions
-source("./study1/functions/diagnostic_fcns.r")
-source("./study1/functions/glmm_stability.r")
-source("./study1/functions/drop1_para.r")
-source("./study1/functions/boot_glmm.r")
+source("./chimpanzees/study1/functions/diagnostic_fcns.r")
+source("./chimpanzees/study1/functions/glmm_stability.r")
+source("./chimpanzees/study1/functions/drop1_para.r")
+source("./chimpanzees/study1/functions/boot_glmm.r")
 
 # Load data -------------------------------------------------------------
 
 # To load all the objects, including model results and bootstraps, you can run the follwing line:
-# load("./study2/R_objects/analysis_2.RData")
+# load("./chimpanzees/study2/R_objects/analysis_2.RData")
 
 xdata <-
-  read.csv("./study2/data/data_study2A_chimpanzees.csv",
+  read.csv("./chimpanzees/study2/data/data_study2A_chimpanzees.csv",
            header = TRUE, na = c("NA", "")
   )
 
@@ -71,7 +71,7 @@ chance.test_exp2 <- glmer(
 )
 
 chance.test_exp2.null   <- glmer(
-  searched.in.available ~ 0 + z.trial + 
+  searched.in.available ~ 0 + z.trial +
     (1 + z.trial | name),
   data = t.data, family = binomial, control = contr
 )
@@ -229,4 +229,4 @@ xdata_plot <- ggplot(data = xdataind, aes(y = prob, x = name)) +
 
 xdata_plot
 
-save.image("./study2/R_objects/analysis_2.RData")
+save.image("./chimpanzees/study2/R_objects/analysis_2.RData")

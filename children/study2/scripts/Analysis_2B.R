@@ -16,10 +16,10 @@ for (pkg in required_packages) {
   library(pkg, character.only = TRUE)
 }
 # Source custom functions
-source("./study1/functions/diagnostic_fcns.r")
-source("./study1/functions/glmm_stability.r")
-source("./study1/functions/drop1_para.r")
-source("./study1/functions/boot_glmm.r")
+source("./children/study1/functions/diagnostic_fcns.r")
+source("./children/study1/functions/glmm_stability.r")
+source("./children/study1/functions/drop1_para.r")
+source("./children/study1/functions/boot_glmm.r")
 options(scipen = 9999)
 
 # Load Data -----------------------------------------------------------------
@@ -28,7 +28,7 @@ options(scipen = 9999)
 # load("./study2/R_objects/Analysis_2.RData")
 
 xdata <-
-  read.csv("./study2/data/data_study2B_children.csv",
+  read.csv("./children/study2/data/data_study2B_children.csv",
            header = TRUE, na = c("NA", "")
   )
 
@@ -232,4 +232,4 @@ plot_study2_children <-
 
 plot_study2_children
 
-save.image("./study2/R_objects/Analysis_2.RData")
+save.image("./children/study2/R_objects/Analysis_2.RData")

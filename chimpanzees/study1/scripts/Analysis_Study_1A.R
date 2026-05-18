@@ -16,18 +16,18 @@ for (pkg in required_packages) {
   library(pkg, character.only = TRUE)
 }
 # Source custom functions
-source("./study1/functions/diagnostic_fcns.r")
-source("./study1/functions/glmm_stability.r")
-source("./study1/functions/drop1_para.r")
-source("./study1/functions/boot_glmm.r")
+source("./chimpanzees/study1/functions/diagnostic_fcns.r")
+source("./chimpanzees/study1/functions/glmm_stability.r")
+source("./chimpanzees/study1/functions/drop1_para.r")
+source("./chimpanzees/study1/functions/boot_glmm.r")
 
 # Load data -------------------------------------------------------------
 
 # To load all the objects, including model results and bootstraps, you can run the follwing line:
-# load("./study1/R_objects/analysis_1.RData")
+# load("./chimpanzees/study1/R_objects/analysis_1.RData")
 
 xdata <-
-  read.csv2("./study1/data/data_study1A_chimpanzees.csv",
+  read.csv2("./chimpanzees/study1/data/data_study1A_chimpanzees.csv",
     header = TRUE, na = c("NA", "")
   )
 # remove spaces at the end of the data
@@ -274,7 +274,7 @@ boot.full$ci.predicted
 ## Bootstraps of plot.model
 plot.model <-
   glmer(
-    searched ~ condition + gender.code + z.trial + 
+    searched ~ condition + gender.code + z.trial +
       (food.received.low.code + food.received.none.code) +
       (1 + (condition.no.choice.code + condition.choice.code) +
         (food.received.low.code + food.received.none.code) + z.trial | name),
@@ -295,7 +295,7 @@ boot.plot$ci.predicted
 model.reward <-
   glmer(
     searched ~
-      food.received + gender.code + z.trial + 
+      food.received + gender.code + z.trial +
       (condition.no.choice.code + condition.choice.code) +
       (1 + (condition.no.choice.code + condition.choice.code) +
         (food.received.low.code + food.received.none.code) + z.trial  | name),
@@ -667,4 +667,4 @@ as.data.frame(round(boot.full$ci.estimates, 3))
 m.stab.plot(round(boot.full$ci.estimates, 3))
 boot.full$ci.predicted
 
-save.image("./study1/R_objects/analysis_1.RData")
+save.image("./chimpanzees/study1/R_objects/analysis_1.RData")

@@ -16,19 +16,19 @@ for (pkg in required_packages) {
   library(pkg, character.only = TRUE)
 }
 # Source custom functions
-source("./study1/functions/diagnostic_fcns.r")
-source("./study1/functions/glmm_stability.r")
-source("./study1/functions/drop1_para.r")
-source("./study1/functions/boot_glmm.r")
+source("./children/study1/functions/diagnostic_fcns.r")
+source("./children/study1/functions/glmm_stability.r")
+source("./children/study1/functions/drop1_para.r")
+source("./children/study1/functions/boot_glmm.r")
 options(scipen = 9999)
 
 # Load data -------------------------------------------------------------
 
 # To load all the objects, including model results and bootstraps, you can run the follwing line:
-# load("./study1/R_objects/analysis_1.RData")
+# load("./children/study1/R_objects/analysis_1B.RData")
 
 xdata <-
-  read.csv("./study1/data/data_study1B_children.csv",
+  read.csv2("./children/study1/data/data_study1B_children.csv",
            header = TRUE, na = c("NA", "")
   )
 # remove spaces at the end of the data
@@ -540,7 +540,15 @@ exp1_plot_condition <-
       y = fitted,
       color = condition), size = 0.8) +
   scale_color_manual(values = c("dodgerblue4", "darkorange4", "darkorange4")) +
-  facet_wrap(~condition, strip.position = "bottom") +
+  #facet_wrap(~condition, strip.position = "bottom") +
+  facet_wrap(
+    ~condition, strip.position = "bottom",
+    labeller = as_labeller(c(
+      control = "Control",
+      choice = "Choice",
+      no.choice = "No choice"
+    ))
+  ) +
   scale_x_continuous(
     name = "Condition * Age",
     breaks = c(
@@ -676,4 +684,4 @@ as.data.frame(round(boot.full$ci.estimates, 3))
 m.stab.plot(round(boot.full$ci.estimates, 3))
 boot.full$ci.predicted
 
-save.image("./study1/R_objects/analysis_1_full_random_slope_structure.RData")
+save.image("./children/study1/R_objects/analysis_1B.RData")
