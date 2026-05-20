@@ -1,4 +1,5 @@
 # Analysis Study 2 - Chimpanzees
+rm(list = ls())
 
 # Define required packages
 required_packages <- c(

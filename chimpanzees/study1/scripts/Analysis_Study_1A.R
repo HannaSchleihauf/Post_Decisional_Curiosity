@@ -1,4 +1,5 @@
 # Analysis Study 1 - Chimpanzees
+rm(list = ls())
 
 # Load packages -------------------------------------------------------------
 # Define required packages
@@ -176,9 +177,9 @@ t.data$condition.no.choice.code <-
 t.data$condition.choice.code <-
   t.data$condition.choice - mean(t.data$condition.choice)
 t.data$gender.code <- t.data$gender.male - mean(t.data$gender.male)
-t.data$z.age <- scale(t.data$age)
+t.data$z.age <- scale(as.numeric(t.data$age))
 t.data$z.trial <-
-  scale(t.data$trial.per.condition)
+  scale(as.numeric(t.data$trial.per.condition))
 
 # Fitting models ----------------------------------------------------
 ## (as pre-registered)

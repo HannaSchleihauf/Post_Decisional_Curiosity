@@ -1,4 +1,5 @@
 # Analysis Study 2 - Children
+rm(list = ls())
 
 # Load packages -------------------------------------------------------------
 # Define required packages
@@ -28,7 +29,7 @@ options(scipen = 9999)
 # load("./study2/R_objects/Analysis_2.RData")
 
 xdata <-
-  read.csv("./children/study2/data/data_study2B_children.csv",
+  read.csv2("./children/study2/data/data_study2B_children.csv",
            header = TRUE, na = c("NA", "")
   )
 
@@ -43,12 +44,12 @@ xdata$searched.in.targeted.box
 ## Participant information ------------------------------------------
 table(xdata$age.group)/4
 table(xdata$gender)/4
-tapply(xdata$age, xdata$age.group, mean)
-tapply(xdata$age, xdata$age.group, min)
-tapply(xdata$age, xdata$age.group, max)
+tapply(as.numeric(xdata$age), xdata$age.group, mean)
+tapply(as.numeric(xdata$age), xdata$age.group, min)
+tapply(as.numeric(xdata$age), xdata$age.group, max)
 
-mean(xdata$age)
-sd(xdata$age)
+mean(as.numeric(xdata$age))
+sd(as.numeric(xdata$age))
 
 round((table(xdata$ethnic.info, useNA = "always")/4)/48, 2)
 xx <- rbind(xdata$education.parent1, xdata$education.parent2)
@@ -84,7 +85,7 @@ print(kappa_results)
 
 # FITTING THE MODEL -----------------------------------------------------------------
 xx.fe.re=fe.re.tab(fe.model="searched.in.targeted.box ~ trial",
-                   re="(1|nr)", data=xdata)  #maybe add age
+                   re="(1|id)", data=xdata)  #maybe add age
 xx.fe.re$summary
 t.data=xx.fe.re$data
 str(t.data)
@@ -98,12 +99,12 @@ sd(as.numeric(t.data$searched.in.targeted.box) - 1)
 contr <- glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 10000000))
 
 chance.test_exp2 <- glmer(searched.in.targeted.box ~ 1 + z.trial +
-                            (1 + z.trial | nr),
+                            (1 + z.trial | id),
                           data = t.data, family = binomial, control = contr
 )
 
 chance.test_exp2.null   <- glmer(searched.in.targeted.box ~ 0 + z.trial +
-    (1 + z.trial | nr),
+    (1 + z.trial | id),
   data = t.data, family = binomial, control = contr
 )
 
@@ -113,7 +114,7 @@ ranef.diagn.plot(chance.test_exp2)
 
 ## Checking model stability
 m.stab.b <-
-  glmm.model.stab(model.res = chance.test_exp2, contr = contr, use = c("nr"))
+  glmm.model.stab(model.res = chance.test_exp2, contr = contr, use = c("id"))
 m.stab.b$detailed$warnings
 as.data.frame(round(m.stab.b$summary[, -1], 3))
 m.stab.plot(round(m.stab.b$summary[, -1], 3))
@@ -133,7 +134,7 @@ library(emmeans)
 emmeans(chance.test_exp2, ~ 1, type = "response")
 emmeans(chance.test_exp2, ~ 1) |> test(null = 0)
 
-ftable(searched.in.targeted.box ~ nr, t.data)
+ftable(searched.in.targeted.box ~ id, t.data)
 
 boot <-
   boot.glmm.pred(
@@ -182,7 +183,7 @@ conf.int <- as.data.frame(round(boot$ci.estimates, 3))["(Intercept)",]
 
 xdata$searched.in.targeted.box.nr <- as.numeric(xdata$searched.in.targeted.box)-1
 xdata.agg <- xdata %>%
-  group_by(nr) %>%
+  group_by(id) %>%
   summarise(mean.resp =
               mean(searched.in.targeted.box.nr, na.rm = T))
 

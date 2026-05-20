@@ -1,4 +1,5 @@
 # Analysis Study 1 - Children
+rm(list = ls())
 
 # Load packages -------------------------------------------------------------
 # Define required packages
@@ -173,8 +174,8 @@ t.data$condition.choice.code <-
   t.data$condition.choice - mean(t.data$condition.choice)
 t.data$gender.code <-
   t.data$gender.male - mean(t.data$gender.male)
-t.data$z.age <- scale(t.data$age)
-t.data$z.trial <- scale(t.data$trial.per.child)
+t.data$z.age <- scale(as.numeric(t.data$age))
+t.data$z.trial <- scale(as.numeric(t.data$trial.per.child))
 
 # Fitting models ----------------------------------------------------
 
@@ -491,14 +492,13 @@ exp1_plot_reward <-
 exp1_plot_reward
 
 # Plotting Condition model---------------------------------------------------
-xdata$z.age <- scale(xdata$age)
+xdata$z.age <- scale(as.numeric(xdata$age))
 
 xdata.agg.condition <- xdata %>%
   mutate(searched.numeric = as.numeric(searched) - 1) %>%
   group_by(id, z.age, condition) %>%
   summarise(mean.resp = mean(searched.numeric, na.rm = T)) %>%
   ungroup()
-xdata.agg.age.group.condition$age.group <- as.numeric(xdata.agg.age.group.condition$age.group) + 0.5
 
 xdata.agg.condition$mean.resp2 <-
   jitter(xdata.agg.condition$mean.resp, amount = 0.04)
@@ -510,10 +510,11 @@ xdata.agg.age.group.condition <- xdata %>%
   ungroup() %>%
   mutate(
     # if age.group is a factor like "2","3",..., go through as.character first
-    age.group.mid = as.numeric(as.character(age.group)) + 0.5,
+    age.group.mid = as.numeric(age.group) + 0.5,
     # put it on the SAME z-scale as z.age
-    z.age.group   = (age.group.mid - mean(xdata$age)) / sd(xdata$age)
+    z.age.group   = (age.group.mid - mean(as.numeric(xdata$age))) / sd(xdata$age)
   )
+xdata.agg.age.group.condition$age.group <- as.numeric(xdata.agg.age.group.condition$age.group) + 0.5
 
 exp1_plot_condition <-
   ggplot() +
