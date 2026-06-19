@@ -1,5 +1,6 @@
 # Analysis Study 1 - Chimpanzees
 rm(list = ls())
+set.seed(123)
 
 # Load packages -------------------------------------------------------------
 # Define required packages
@@ -114,6 +115,11 @@ round(tapply(
   list(xdata$condition, xdata$food.received), mean
 ), 3)
 
+round(tapply(
+  (as.numeric(xdata$searched) - 1),
+  list(xdata$condition, xdata$food.received), sd
+), 3)
+
 # Prepare data for model fitting------------------------------------
 xx.fe.re <- fe.re.tab(
   fe.model = "searched ~
@@ -134,30 +140,37 @@ per_subject <- t.data %>%
   summarise(prop_searched = mean(searched_num, na.rm = TRUE),
             n_trials = n(),
             .groups = "drop")
+per_subject
+
 per_subject_summary <- per_subject %>%
   group_by(condition) %>%
   summarise(mean_prop = mean(prop_searched, na.rm = TRUE),
             sd_prop   = sd(prop_searched, na.rm = TRUE),
             n_subjects = n(),
             .groups = "drop")
+per_subject_summary
 
 per_subject <- t.data %>%
   group_by(name, food.received) %>%
   summarise(prop_searched = mean(searched_num, na.rm = TRUE),
             n_trials = n(),
             .groups = "drop")
+per_subject
+
 per_subject_summary <- per_subject %>%
   group_by(food.received) %>%
   summarise(mean_prop = mean(prop_searched, na.rm = TRUE),
             sd_prop   = sd(prop_searched, na.rm = TRUE),
             n_subjects = n(),
             .groups = "drop")
+per_subject_summary
 
 per_subject <- t.data %>%
   group_by(name, condition, food.received) %>%
   summarise(prop_searched = mean(searched_num, na.rm = TRUE),
             n_trials = n(),
             .groups = "drop")
+per_subject
 
 per_subject_summary <- per_subject %>%
   group_by(condition, food.received) %>%
@@ -165,6 +178,7 @@ per_subject_summary <- per_subject %>%
             sd_prop    = sd(prop_searched, na.rm = TRUE),
             n_subjects = n(),
             .groups = "drop")
+per_subject_summary
 
 ## Center dummy variables ----
 ## (necessary for the random effects in the model and potentially plotting)

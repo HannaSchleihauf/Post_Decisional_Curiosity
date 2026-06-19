@@ -1,5 +1,6 @@
 # Analysis Study 1 - Children
 rm(list = ls())
+set.seed(123)
 
 # Load packages -------------------------------------------------------------
 # Define required packages
@@ -30,7 +31,7 @@ options(scipen = 9999)
 
 xdata <-
   read.csv2("./children/study1/data/data_study1B_children.csv",
-           header = TRUE, na = c("NA", "")
+            header = TRUE, na = c("NA", "")
   )
 # remove spaces at the end of the data
 xdata <- as.data.frame(
@@ -184,13 +185,22 @@ contr <- glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 10000000))
 full <-
   glmer(
     searched ~
+      (reward.received * condition * z.age)  + gender + z.trial +
+      (1 + z.trial | id), #(reward.received.low.code + reward.received.none.code)
+    data = t.data, control = contr,
+    family = binomial(link = "logit")
+  )
+
+red.1 <-
+  glmer(
+    searched ~
       (reward.received + condition + z.age)^2  + gender + z.trial +
       (1 + z.trial | id), #(reward.received.low.code + reward.received.none.code)
     data = t.data, control = contr,
     family = binomial(link = "logit")
   )
 
-red <-
+red.2 <-
   glmer(
     searched ~
       reward.received + (condition + z.age)^2 + gender + z.trial +
@@ -256,11 +266,19 @@ tests.full <- drop1p(
   contr = contr
 )
 round(tests.full$drop1.res, 3)
-tests.red <- drop1p(
-  model.res = red,
+
+tests.red.1 <- drop1p(
+  model.res = red.1,
   contr = contr
 )
-round(tests.red$drop1.res, 3)
+round(tests.red.1$drop1.res, 3)
+
+tests.red.2 <- drop1p(
+  model.res = red.2,
+  contr = contr
+)
+round(tests.red.2$drop1.res, 3)
+
 tests.main <- drop1p(
   model.res = main,
   contr = contr
@@ -269,10 +287,10 @@ round(tests.main$drop1.res, 3)
 
 ## First peek at effects
 library("effects")
-plot(effect("condition:z.age", red))
-plot(effect("z.trial", red))
-plot(effect("gender", red))
-plot(effect(c("reward.received"), red))
+plot(effect("condition:z.age", red.1))
+plot(effect("z.trial", main))
+plot(effect("gender", main))
+plot(effect(c("reward.received"), main))
 
 ## Pairwise comparisons
 emm1 <- emmeans(main, ~condition)
@@ -282,8 +300,8 @@ summary(pairs(emm1), type = "response")
 
 emm2 <- emmeans(main, ~reward.received)
 summary(emm2, type = "response")
-emmeans(red, pairwise ~reward.received)
 summary(pairs(emm2), type = "response")
+emmeans(main, pairwise ~reward.received)
 
 # Bootstraps --------------------------------------------------------------
 ## Bootstraps of full model
@@ -605,6 +623,15 @@ without_contr <- subset(t.data, t.data$condition == "choice" |
 full.no.cont <-
   glmer(
     searched ~
+      reward.received * condition * z.age + gender + z.trial +
+      (1 + z.trial | id),
+    data = without_contr, control = contr,
+    family = binomial(link = "logit")
+  )
+
+red.no.cont.1 <-
+  glmer(
+    searched ~
       (reward.received + condition + z.age)^2 + gender + z.trial +
       (1 + z.trial | id),
     data = without_contr, control = contr,
@@ -661,6 +688,12 @@ tests.full <- drop1p(
   contr = contr
 )
 round(tests.full$drop1.res, 3)
+
+tests.red.1 <- drop1p(
+  model.res = red.no.cont.1,
+  contr = contr
+)
+round(tests.red.1$drop1.res, 3)
 
 tests.main <- drop1p(
   model.res = main.no.cont,
