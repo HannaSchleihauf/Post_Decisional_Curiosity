@@ -344,7 +344,7 @@ xdata.agg <- xdata %>%
 xdata.agg$food.received2 <-
   jitter(as.numeric(as.factor(xdata.agg$food.received)), amount = 0.13)
 xdata.agg$mean.resp2 <-
-  jitter(xdata.agg$mean.resp, amount = 0.04)
+  jitter(xdata.agg$mean.resp, amount = 0.00)
 
 exp1_plot_rewards <-
   ggplot(data = xdata.agg, aes(
@@ -440,8 +440,8 @@ exp1_plot_rewards <-
     limits = c("high", "low", "none"),
     name = "Reward received",
     labels = c(
-      "High-value",
-      "Low-value",
+      "High value",
+      "Low value",
       "No reward"
     )
   ) +
@@ -449,7 +449,7 @@ exp1_plot_rewards <-
     name = "Post-decisional information search",
     labels = scales::percent
   ) +
-  labs(title = "Effect of received reward value") +
+  labs(title = "Received reward value") +
   theme_classic() +
   theme(
     axis.ticks.x = element_blank(),
@@ -556,13 +556,13 @@ exp1_plot_condition <-
   scale_x_discrete(
     limits = c("control", "choice", "no-choice"),
     name = "Condition",
-    labels = c("Control", "Choice", "No-choice")
+    labels = c("Control", "Choice", "No choice")
   ) +
   scale_y_continuous(
     name = "Post-decisional information search",
     labels = scales::percent
   ) +
-  labs(title = "Effect of condition") +
+  labs(title = "Condition") +
   theme_classic() +
   theme(
     legend.position = "none",

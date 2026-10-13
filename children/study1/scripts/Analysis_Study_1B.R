@@ -372,7 +372,7 @@ xdata.agg <- xdata %>%
 xdata.agg$reward.received2 <-
   jitter(as.numeric(as.factor(xdata.agg$reward.received)), amount = 0.13)
 xdata.agg$mean.resp2 <-
-  jitter(xdata.agg$mean.resp, amount = 0.04)
+  jitter(xdata.agg$mean.resp, amount = 0.00)
 
 exp1_plot_reward <-
   ggplot(data = xdata.agg, aes(x = factor(reward.received,
@@ -471,19 +471,19 @@ exp1_plot_reward <-
       "Reward received",
     labels =
       c(
-        "High-value",
-        "Low-value",
+        "High value",
+        "Low value",
         "No reward"
       )
   ) +
   scale_y_continuous(
     name =
-      "Post-decisional information-search",
+      "Post-decisional information search",
     labels = scales::percent
   ) +
   labs(
     title =
-      "Effect of received reward value"
+      "Received reward value"
   ) +
   theme_classic() +
   theme(
@@ -519,7 +519,7 @@ xdata.agg.condition <- xdata %>%
   ungroup()
 
 xdata.agg.condition$mean.resp2 <-
-  jitter(xdata.agg.condition$mean.resp, amount = 0.04)
+  jitter(xdata.agg.condition$mean.resp, amount = 0.00)
 
 xdata.agg.age.group.condition <- xdata %>%
   mutate(searched.numeric = as.numeric(searched) - 1) %>%
@@ -580,10 +580,10 @@ exp1_plot_condition <-
     labels = c(2, 3, 4, 5, 6)
   ) +
   scale_y_continuous(
-    name = "Post-decisional information-search",
+    name = "Post-decisional information search",
     labels = scales::percent
   ) +
-  labs(title = "Effect of the condition*age interaction") +
+  labs(title = "Condition*age interaction") +
   theme_classic() +
   theme(
     legend.position = "none",
@@ -683,39 +683,39 @@ cbind(
 round(anova(full.no.cont, null.no.cont, test = "Chisq"), 3)
 
 ## Reduced model comparisons
-tests.full <- drop1p(
+tests.full.no.cont <- drop1p(
   model.res = full.no.cont,
   contr = contr
 )
-round(tests.full$drop1.res, 3)
+round(tests.full.no.cont$drop1.res, 3)
 
-tests.red.1 <- drop1p(
+tests.red.1.no.cont <- drop1p(
   model.res = red.no.cont.1,
   contr = contr
 )
-round(tests.red.1$drop1.res, 3)
+round(tests.red.1.no.cont$drop1.res, 3)
 
-tests.main <- drop1p(
+tests.main.no.cont <- drop1p(
   model.res = main.no.cont,
   contr = contr
 )
-round(tests.main$drop1.res, 3)
+round(tests.main.no.cont$drop1.res, 3)
 
 ## First peek at effects
 library("effects")
-plot(effect("condition:z.age", red))
+plot(effect("condition:z.age", red.no.cont.1))
 plot(effect(c("reward.received"), main.no.cont))
 plot(effect(c("z.trial"), main.no.cont))
 
 ## Bootstraps of full model
-boot.full <- boot.glmm.pred(
+boot.full.no.cont <- boot.glmm.pred(
   model.res = full.no.cont, excl.warnings = T,
   nboots = 1000, para = F, level = 0.95,
   use = c("condition", "reward.received", "z.age")
 )
-round(boot.full$ci.estimates, 3)
-as.data.frame(round(boot.full$ci.estimates, 3))
-m.stab.plot(round(boot.full$ci.estimates, 3))
-boot.full$ci.predicted
+round(boot.full.no.cont$ci.estimates, 3)
+as.data.frame(round(boot.full.no.cont$ci.estimates, 3))
+m.stab.plot(round(boot.full.no.cont$ci.estimates, 3))
+boot.full.no.cont$ci.predicted
 
 save.image("./children/study1/R_objects/analysis_1B.RData")
