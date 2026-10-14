@@ -2,7 +2,7 @@
 
 Data, analysis code, and power simulations for:
 
-> Schleihauf, H., Haux, L., Ghavamizadeh, N., Fischer, J., Engelmann, J. M.\*, & Herrmann, E.\* (2026). Chimpanzees and human children explore unchosen options. *Proceedings of the Royal Society B*. DOI: *to be added*
+> Schleihauf, H., Haux, L., Ghavamizadeh, N., Fischer, J., Engelmann, J. M.\*, & Herrmann, E.\* (under revision). Chimpanzees and human children explore unchosen options.
 >
 > \* shared last authorship
 
@@ -88,10 +88,19 @@ Based on GLMM utility functions by Roger Mundry; used across all analyses:
 ### Requirements
 
 - **R ≥ 4.3** (analyses in the paper were run in R 4.3.3)
-- Packages: `lme4`, `tidyverse`, `tidyselect`, `readxl`, `parallel`, `optimx`, `emmeans`, `car`, `irr`, `effects`, `gghalves`, `ggthemes`, `cowplot`, `ggpubr`
-- Additional packages for the power simulations: `data.table`, `kyotil`
+- Packages for the analysis scripts:
 
-The analysis scripts install any missing core packages automatically.
+  | Package | Used for |
+  |---|---|
+  | `lme4` | Fitting the GLMMs (`glmer`) |
+  | `tidyverse` | Data wrangling (`dplyr`, `tidyr`) and figures (`ggplot2`, `scales`) |
+  | `car` | Collinearity checks (`vif`) |
+  | `irr` | Inter-rater reliability (`kappa2`) |
+  | `emmeans` | Estimated marginal means and pairwise comparisons |
+  | `effects` | Quick visual inspection of model effects |
+  | `ggpubr` | Combining panels into the final figures (`ggarrange`, `theme_pubr`) |
+
+- Additional packages for the power simulations: `data.table`, `kyotil` (`keepWarnings`), `cowplot` (Study 2 only), and `knitr`/`rmarkdown` for knitting the `.Rmd` files
 
 ### Steps
 
@@ -105,7 +114,22 @@ The analysis scripts install any missing core packages automatically.
    | 2A | `chimpanzees/study2/scripts/Analysis_2A.R` | Results Study 2A, Figure 4b |
    | 2B | `children/study2/scripts/Analysis_2B.R` | Results Study 2B, Figure 4c |
 
-3. **To save time:** the bootstrapped confidence intervals (1,000 resamples) can take a long time to compute. Each script has a commented-out line near the top that loads the saved workspace (`R_objects/*.RData`) containing all fitted models and bootstraps. Uncomment it to explore the results without rerunning everything.
+3. **To save time,** load the saved workspace instead of rerunning everything (see below).
+
+### Saved R objects: skip the long computations
+
+Some steps take a long time to run, especially the bootstrapped confidence intervals (1,000 resamples per model). For this reason, each study comes with an **`.RData` file containing every object the analysis script creates**: the cleaned data, all fitted models, model comparisons, stability checks, bootstraps, and plots.
+
+Load the file at the start of the script, then run only the parts you want to inspect:
+
+| Study | Run at the start of the script |
+|---|---|
+| 1A | `load("./chimpanzees/study1/R_objects/analysis_1.RData")` |
+| 1B | `load("./children/study1/R_objects/analysis_1B.RData")` |
+| 2A | `load("./chimpanzees/study2/R_objects/analysis_2.RData")` |
+| 2B | `load("./children/study2/R_objects/Analysis_2.RData")` |
+
+Each analysis script already has this line, commented out, in its "Load data" section; just uncomment it. The results of the power simulations are saved the same way in the `R_objects/` folders.
 
 ### What each analysis script does
 
@@ -188,4 +212,6 @@ Hanna Schleihauf – Department of Developmental Psychology, Utrecht University 
 
 ## License
 
-*To be added* (e.g. code under MIT, data under CC BY 4.0).
+[![CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
+
+This repository, including data, code, and materials, is licensed under a [Creative Commons Attribution 4.0 International License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/). You are free to share and adapt the material for any purpose, provided you give appropriate credit by citing the paper above.
